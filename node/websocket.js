@@ -658,30 +658,30 @@ io.sockets.on('connection', function(socket) {
 	{
 		uid = gen_uid();
 		connected.push({ socket: socket, uid: uid, character: undefined });
-	}
 	
-  socket.on('startGame', function(content) {
-		if (!gameRunning)
-		{
-			gameRunning = true;
-			var scen = find(scenarios, function (scen) { return scen.players === connected.length; });
-			if (scen == -1)
+		socket.on('startGame', function(content) {
+			if (!gameRunning)
 			{
-				// Too few or too many players
-				gameRunning = false;
-				return;
+				gameRunning = true;
+				var scen = find(scenarios, function (scen) { return scen.players === connected.length; });
+				if (scen == -1)
+				{
+					// Too few or too many players
+					gameRunning = false;
+					return;
+				}
+				scen = scenarios[scen];
+				scramble(connected);
+				for (var i = 0; i < connected.length; ++i)
+				{
+					connected[i].character = scen.characters[i];
+					connected[i].socket.emit('character', connected[i].character);
+				}
 			}
-			scen = scenarios[scen];
-			scramble(connected);
-			for (var i = 0; i < connected.length; ++i)
-			{
-				connected[i].character = scen.characters[i];
-				connected[i].socket.emit('character', connected[i].character);
-			}
-		}
-  });
-	socket.on('disconnect', function(content) {
-		var idx = find(connected, function (connection) { return connection.uid === uid});
-		connected.splice(idx, 1);
-	});
+		});
+		socket.on('disconnect', function(content) {
+			var idx = find(connected, function (connection) { return connection.uid === uid});
+			connected.splice(idx, 1);
+		});
+	}
 });
