@@ -37,18 +37,22 @@
     </head>
     
     <body>
-
-<div id="msg">
+        <div id='msg'>
+            <h1>Welcome to Trashalon! Get Ready for Screaming, Salt, and General Trash!
+            </h1>
         </div>
-        <div id="chart">
+        <div id='numPeopleDiv'>
+        People in the lobby
+            <div id='numPeople'>
+            </div>
         </div>
-        
-        <div id="info">
-            <img></img> 
+        <div id="buttonDiv">
+        <button id ="readyToStart">Ready to Start Game</button>
+        </div>
+        <div id="characterDiv">
         </div>
     </body>
-    
-    <script src="forceGraph.js"></script>
+
 <script>
   // connect to WEBSOCKET server
   var socket = io.connect('http://localhost:5000');
@@ -61,19 +65,25 @@
      var elem = document.getElementById('msg');
      elem.innerHTML += "<br>" + data; // append data that we got back
   });
-    
-  socket.on('getName', function(data) {
-      var name = prompt("Congratulations you made the leaderboard! Please enter your name!", "Mclovin");
-      socket.emit('givenName',name);
+  socket.on('numPlayersUpdated', function(data) {
+
+     var elem = document.getElementById('numPeople');
+     elem.innerHTML = data; // append data that we got back
   });
-    
-  socket.on('newLeaderboard', function(leaderboard) {
-      var displayString = "";
-      var i;
-      for(i=0;i<leaderboard.length;i++){
-          displayString+=leaderboard[i].name + " "+ leaderboard[i].score+"\n";
-      }
-      alert(displayString);
+  socket.on('character', function(data) {
+     if(data == -1)
+     {
+        alert(1);
+        var elem = document.getElementById('characterDiv');
+        elem.innerHTML = "Yo you can't do that";
+        //$("#characterDiv").innerHTML = "Yo you can't do that";
+        return;
+     }
+     var elem = document.getElementById('characterDiv');
+     elem.innerHTML = "You are "+data;
   });
+   $("#readyToStart").click(function(){
+       socket.emit('startGame', "");
+   })
 </script>
 </html>
