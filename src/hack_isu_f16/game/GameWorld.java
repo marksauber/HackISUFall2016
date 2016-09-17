@@ -15,10 +15,18 @@ public class GameWorld
 {
   enum TileType
   {
-    AIR,
-    FALLING,
-    BREAKABLE,
-    NORMAL
+    AIR, FALLING, BREAKABLE, NORMAL;
+
+    public boolean canWalkThrough()
+    {
+      switch (this)
+      {
+        case AIR:
+          return true;
+        default:
+          return false;
+      }
+    }
   }
 
   /**
@@ -38,40 +46,55 @@ public class GameWorld
       tiles[i] = new LinkedList<>();
     }
     entities = new HashSet<>();
-    
+
     initGen();
   }
-  
+
   public void generateNextColumn()
   {
     generateNextColumn(true);
   }
-  
+
   private void generateNextColumn(boolean removeFirst)
   {
     Random r = new Random();
     TileType[] values = Utils.ArrayUtils.asArray(TileType.AIR, TileType.FALLING, TileType.BREAKABLE, TileType.NORMAL);
-    for (int i = 0; i < tiles.length; ++i)
+    gen:
+    for (int i = tiles.length - 1; i >= 0; --i)
     {
       LinkedList<TileType> l = tiles[i];
+      // Make sure player has room to continue moving
+      for (int x = 0; x < 3; ++x)
+      {
+        if (i + x + 1 < tiles.length && !tiles[i + x + 1].getLast().canWalkThrough())
+        {
+          l.addLast(TileType.AIR);
+          continue gen;
+        }
+      }
       TileType last = l.getLast();
       int[] weights;
       switch (last)
       {
         case AIR:
-          weights = new int[] { 8, 1, 3, 2 };
+          weights = new int[]
+          { 12, 1, 3, 2 };
           break;
         case FALLING:
-          weights = new int[] { 2, 5, 3, 1 };
+          weights = new int[]
+          { 12, 5, 3, 1 };
           break;
         case BREAKABLE:
-          weights = new int[] { 4, 1, 6, 0 };
+          weights = new int[]
+          { 12, 1, 6, 0 };
           break;
         case NORMAL:
-          weights = new int[] { 3, 6, 4, 8 };
+          weights = new int[]
+          { 12, 6, 4, 8 };
           break;
         default:
-          weights = new int[] { 0, 0, 0, 1 };
+          weights = new int[]
+          { 0, 0, 0, 1 };
           break;
       }
       l.addLast(Utils.weightedRandom(r, weights, values));
@@ -81,10 +104,10 @@ public class GameWorld
       }
     }
   }
-  
+
   private void initGen()
   {
-    final int WIDTH = 20;
+    final int WIDTH = 32;
     for (int w = 0; w < WIDTH / 4; ++w)
     {
       for (int i = 0; i < tiles.length - 1; ++i)
