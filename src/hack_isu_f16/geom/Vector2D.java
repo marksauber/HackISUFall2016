@@ -30,6 +30,11 @@ public class Vector2D
   public static final Vector2D J = new Vector2D(0, 1);
 
   /**
+   * The zero vector.
+   */
+  public static final Vector2D ZERO = new Vector2D(0, 0);
+
+  /**
    * Constructs a vector with the given x and y components.
    * 
    * @param x
