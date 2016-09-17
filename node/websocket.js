@@ -658,7 +658,8 @@ io.sockets.on('connection', function(socket) {
 	{
 		uid = gen_uid();
 		connected.push({ socket: socket, uid: uid, character: undefined });
-	
+        socket.emit('numPlayersUpdated', connected.length);
+	    socket.broadcast.emit('numPlayersUpdated', connected.length);
 		socket.on('startGame', function(content) {
 			if (!gameRunning)
 			{
@@ -668,6 +669,7 @@ io.sockets.on('connection', function(socket) {
 				{
 					// Too few or too many players
 					gameRunning = false;
+                    socket.emit('character', -1)
 					return;
 				}
 				scen = scenarios[scen];
@@ -682,6 +684,7 @@ io.sockets.on('connection', function(socket) {
 		socket.on('disconnect', function(content) {
 			var idx = find(connected, function (connection) { return connection.uid === uid});
 			connected.splice(idx, 1);
+            socket.broadcast.emit('numPlayersUpdated', connected.length);
 		});
 	}
 });
