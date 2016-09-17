@@ -11,8 +11,8 @@ public class Player extends Entity
   }
 
   @Override
-  public void update()
+  public void update(GameWorld world)
   {
-    super.update();
+    super.update(world);
   }
 }

@@ -23,11 +23,26 @@ public abstract class Entity
   {
     this.position = initialPos;
     this.velocity = initialVel;
-    this.boundingBox = boundBox;
+    this.boundingBox = boundBox.translate(-boundBox.getX1(), -boundBox.getY1());
   }
 
-  public void update()
+  public void update(GameWorld world)
   {
     position = position.add(velocity);
+  }
+  
+  public Vector2D getPosition()
+  {
+    return position;
+  }
+  
+  public Vector2D getVelocity()
+  {
+    return velocity;
+  }
+  
+  public Rectangle2D getBoundingBox()
+  {
+    return boundingBox.translate(position);
   }
 }

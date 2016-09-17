@@ -13,9 +13,9 @@ public abstract class Projectile extends Entity
     this.acceleration = accel;
   }
 
-  public void update()
+  public void update(GameWorld world)
   {
-    super.update();
+    super.update(world);
     velocity.add(acceleration);
   }
 }
