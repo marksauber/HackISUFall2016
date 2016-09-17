@@ -651,15 +651,25 @@ function scramble(arr)
 
 var connected = [ ];
 var gameRunning = false;
+var names = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
 
 io.sockets.on('connection', function(socket) {
-	var uid;
 	if (!gameRunning)
 	{
+		var uid;
 		uid = gen_uid();
-		connected.push({ socket: socket, uid: uid, character: undefined });
+		connected.push({ socket: socket, uid: uid, name: names[connected.length], character: undefined });
         socket.emit('numPlayersUpdated', connected.length);
 	    socket.broadcast.emit('numPlayersUpdated', connected.length);
+		
+		socket.on('setName', function(name) {
+			var obj = connected[find(connected, function (c) { return c.uid === uid; })];
+			var oldName = obj.name;
+			obj.name = name;
+			// Tell others about name change
+			socket.broadcast.emit('playerNameUpdated', oldName + ' to ' + name);
+		});
+		
 		socket.on('startGame', function(content) {
 			if (!gameRunning)
 			{
@@ -669,7 +679,7 @@ io.sockets.on('connection', function(socket) {
 				{
 					// Too few or too many players
 					gameRunning = false;
-                    socket.emit('character', -1)
+          socket.emit('character', -1)
 					return;
 				}
 				scen = scenarios[scen];
@@ -678,6 +688,19 @@ io.sockets.on('connection', function(socket) {
 				{
 					connected[i].character = scen.characters[i];
 					connected[i].socket.emit('character', connected[i].character);
+				}
+				for (var i = 0; i < connected.length; ++i)
+				{
+					var known = { people: [], known: characters[connected[i].character].knows };
+					for (var k = 0; k < known.known.length; ++k)
+					{
+						var kIdx = find(connected, function(c) { return c.character === known.known[k]; });
+						if (kIdx !== -1)
+						{
+							known.people.push({ name: connected[kIdx].name });
+						}
+					}
+					connected[i].socket.emit('known', known);
 				}
 			}
 		});
