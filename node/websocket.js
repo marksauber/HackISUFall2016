@@ -667,7 +667,7 @@ io.sockets.on('connection', function(socket) {
 			var oldName = obj.name;
 			obj.name = name;
 			// Tell others about name change
-			socket.broadcast.emit('playerNameUpdated', oldName + ' to ' + name);
+			socket.broadcast.emit('playerNameUpdated', { oldVal: oldName, newVal: name});
 		});
 		
 		socket.on('startGame', function(content) {
@@ -684,23 +684,31 @@ io.sockets.on('connection', function(socket) {
 				}
 				scen = scenarios[scen];
 				scramble(connected);
+				// Assign people to characters and let them know
 				for (var i = 0; i < connected.length; ++i)
 				{
 					connected[i].character = scen.characters[i];
 					connected[i].socket.emit('character', connected[i].character);
 				}
+				// Find out who people know is who and tell them about it
 				for (var i = 0; i < connected.length; ++i)
 				{
-					var known = { people: [], known: characters[connected[i].character].knows };
-					for (var k = 0; k < known.known.length; ++k)
+					var knownPeople = { people: [], known: characters[connected[i].character].knows.slice() };
+					for (var k = 0; k < knownPeople.known.length; ++k)
 					{
-						var kIdx = find(connected, function(c) { return c.character === known.known[k]; });
+						// Find person that is known
+						var kIdx = find(connected, function(c) { return c.character === knownPeople.known[k]; });
 						if (kIdx !== -1)
 						{
-							known.people.push({ name: connected[kIdx].name });
+							knownPeople.people.push(connected[kIdx].name);
+						}
+						else
+						{
+							knownPeople.known.splice(k, 1);
+							--k;
 						}
 					}
-					connected[i].socket.emit('known', known);
+					connected[i].socket.emit('knownPeople', knownPeople);
 				}
 			}
 		});

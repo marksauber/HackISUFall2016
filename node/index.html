@@ -47,15 +47,28 @@
             </div>
         </div>
         <div id="buttonDiv">
-        <button id ="readyToStart">Ready to Start Game</button>
+					<button id ="readyToStart">Ready to Start Game</button>
         </div>
-        <div id="characterDiv">
-        </div>
+				<div>
+					<input id="myName" type="text"></input>
+					<button id="setMyName">Set Name</button>
+				</div>
+				<div id="characterDiv">
+				</div>
+				<div id="youKnow">
+				</div>
     </body>
 
 <script>
   // connect to WEBSOCKET server
   var socket = io.connect('http://localhost:5000');
+	var knownPeople = undefined;
+	
+	function updateKnown()
+	{
+		var elem = document.getElementById('youKnow');
+		elem.innerHTML = 'You know ' + JSON.stringify(knownPeople.people) + ' are ' + JSON.stringify(knownPeople.known);
+	}
 
   // Fire an event (that the server will handle
   socket.emit('myEvent', 'Hello Message from the client');
@@ -66,14 +79,12 @@
      elem.innerHTML += "<br>" + data; // append data that we got back
   });
   socket.on('numPlayersUpdated', function(data) {
-
      var elem = document.getElementById('numPeople');
      elem.innerHTML = data; // append data that we got back
   });
   socket.on('character', function(data) {
      if(data == -1)
      {
-        alert(1);
         var elem = document.getElementById('characterDiv');
         elem.innerHTML = "Yo you can't do that";
         //$("#characterDiv").innerHTML = "Yo you can't do that";
@@ -82,8 +93,26 @@
      var elem = document.getElementById('characterDiv');
      elem.innerHTML = "You are "+data;
   });
+	socket.on('knownPeople', function(data) {
+		knownPeople = data;
+		updateKnown();
+	});
+	socket.on('playerNameUpdated', function(data) {
+		for (var i = 0; i < knownPeople.people.length; ++i)
+		{
+			if (data.oldVal === knownPeople.people[i])
+			{
+				knownPeople.people[i] = data.newVal;
+				break;
+			}
+		}
+		updateKnown();
+	});
    $("#readyToStart").click(function(){
        socket.emit('startGame', "");
+   })
+   $("#setMyName").click(function(){
+       socket.emit('setName',document.getElementById('myName').value);
    })
 </script>
 </html>
