@@ -6,5 +6,9 @@ public class Utils
   {
     /* No */
   }
-
+  
+  public static boolean equalsApprox(double a, double b, double maxDelta)
+  {
+    return Math.abs(a - b) <= maxDelta;
+  }
 }

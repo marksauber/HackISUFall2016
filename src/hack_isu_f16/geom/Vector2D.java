@@ -1,5 +1,7 @@
 package hack_isu_f16.geom;
 
+import hack_isu_f16.util.Utils;
+
 /**
  * A class representing an immutable two-dimensional vector.
  * 
@@ -84,6 +86,16 @@ public class Vector2D
   }
 
   /**
+   * Returns the unit vector in the same direction as this vector.
+   * 
+   * @return the unit vector in the same direction as this vector
+   */
+  public Vector2D normalize()
+  {
+    return this.multiply(1 / this.getMagnitude());
+  }
+
+  /**
    * Returns the angle between this vector and the x-axis, in radians, measured
    * counterclockwise.
    * 
@@ -107,6 +119,23 @@ public class Vector2D
   public double angleBetween(Vector2D other)
   {
     return Math.acos(this.dotProduct(other) / Math.sqrt(this.getMagnitudeSquared() * other.getMagnitudeSquared()));
+  }
+
+  /**
+   * Returns a vector in the same direction as the given one with magnitude
+   * equal to the magnitude of this vector in the direction of the given vector.
+   * <br>
+   * The projection of a vector <b>u</b> onto <b>v</b> is defined as<br>
+   * <b>u</b> proj <b>v</b> = |<b>u</b>| * cos&#x03B8; * <b>v</b> / |<b>v</b>| =
+   * (<b>u</b> &#x2219; <b>v</b>) * <b>v</b> / |<b>v</b>|<sup>2</sup><br>
+   * 
+   * @param onto
+   *          the vector to project this vector onto
+   * @return the result of the projection
+   */
+  public Vector2D projectionOn(Vector2D onto)
+  {
+    return onto.multiply(this.dotProduct(onto) / onto.getMagnitudeSquared());
   }
 
   /**
@@ -145,6 +174,78 @@ public class Vector2D
   }
 
   /**
+   * Adds this vector to the given one, and returns the result.
+   * 
+   * @param other
+   *          the vector to add to this one
+   * @return the resulting vector
+   */
+  public Vector2D add(Vector2D other)
+  {
+    return new Vector2D(this.x + other.x, this.y + other.y);
+  }
+
+  /**
+   * Subtracts the given vector from this one, and returns the result.
+   * 
+   * @param other
+   *          the vector to subtract from this one
+   * @return the resulting vector
+   */
+  public Vector2D subtract(Vector2D other)
+  {
+    return add(other.negate());
+  }
+
+  /**
+   * Returns the vector with equal magnitude and opposite direction to this one.
+   * 
+   * @return the negated vector
+   */
+  public Vector2D negate()
+  {
+    return new Vector2D(-x, -y);
+  }
+
+  /**
+   * Multiplies each component of this vector by the given scalar value. The
+   * returned vector will have the same direction as this one, with a magnitude
+   * of this vector's magnitude times the given scalar.
+   * 
+   * @param scalar
+   *          the value to multiply this vector by
+   * @return the resulting vector
+   */
+  public Vector2D multiply(double scalar)
+  {
+    return new Vector2D(x * scalar, y * scalar);
+  }
+
+  /**
+   * Returns the vector orthogonal to this one in the positive
+   * (counterclockwise) direction with equal magnitude.
+   * 
+   * @return the vector orthogonal to this one in the positive
+   *         (counterclockwise) direction
+   */
+  public Vector2D orthogPos()
+  {
+    return new Vector2D(-y, x);
+  }
+
+  /**
+   * Returns the vector orthogonal to this one in the negative (clockwise)
+   * direction with equal magnitude.
+   * 
+   * @return the vector orthogonal to this one in the negative (clockwise)
+   *         direction
+   */
+  public Vector2D orthogNeg()
+  {
+    return new Vector2D(y, -x);
+  }
+
+  /**
    * Returns true if the difference between this vector's and the given vector's
    * x and y components are each less than or equal to {@code maxDelta}.
    * 
@@ -157,7 +258,7 @@ public class Vector2D
    */
   public boolean equalsApprox(Vector2D other, double maxDelta)
   {
-    return Math.abs(this.x - other.x) <= maxDelta && Math.abs(this.y - other.y) <= maxDelta;
+    return Utils.equalsApprox(this.x, other.x, maxDelta) && Utils.equalsApprox(this.y, other.y, maxDelta);
   }
 
   @Override
