@@ -55,6 +55,10 @@
 				</div>
 				<div id="characterDiv">
 				</div>
+				<div id="king">
+					<div id="kingMsg"></div>
+					<div id="kingSel"></div>
+				</div>
 				<div id="youKnow">
 				</div>
     </body>
@@ -96,6 +100,19 @@
 	socket.on('knownPeople', function(data) {
 		knownPeople = data;
 		updateKnown();
+	});
+	socket.on('king', function(king) {
+		document.getElementById('kingMsg').innerHTML = king.msg;
+		if (king.amIKing)
+		{
+			// TODO dropdowns to select quest-goers
+			document.getElementById('kingSel').innerHTML = '';
+		}
+		else
+		{
+			// Remove dropdowns if necessary
+			document.getElementById('kingSel').innerHTML = '';
+		}
 	});
 	socket.on('playerNameUpdated', function(data) {
 		for (var i = 0; i < knownPeople.people.length; ++i)

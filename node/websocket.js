@@ -649,16 +649,29 @@ function scramble(arr)
 	}
 }
 
+function pickKing()
+{
+	var i;
+	do
+	{
+		i = Math.floor(Math.random() * connected.length);
+	}
+	while (connected[i].hasBeenKing);
+	connected[i].hasBeenKing = true;
+	return i;
+}
+
 var connected = [ ];
 var gameRunning = false;
 var names = [ 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+var currScenario = { scen: null, questHistory: null, quest: -1, rejectedQuests: 0 };
 
 io.sockets.on('connection', function(socket) {
 	if (!gameRunning)
 	{
 		var uid;
 		uid = gen_uid();
-		connected.push({ socket: socket, uid: uid, name: names[connected.length], character: undefined });
+		connected.push({ socket: socket, uid: uid, name: names[connected.length], character: undefined, hasBeenKing: false });
         socket.emit('numPlayersUpdated', connected.length);
 	    socket.broadcast.emit('numPlayersUpdated', connected.length);
 		
@@ -682,12 +695,16 @@ io.sockets.on('connection', function(socket) {
           socket.emit('character', -1)
 					return;
 				}
-				scen = scenarios[scen];
-				scramble(connected);
+				// Set scenario
+				currScenario.scen = scenarios[scen];
+				currScenario.questHistory = null;
+				currScenario.quest = 0;
+				currScenario.rejectedQuests = 0;
 				// Assign people to characters and let them know
+				scramble(connected);
 				for (var i = 0; i < connected.length; ++i)
 				{
-					connected[i].character = scen.characters[i];
+					connected[i].character = currScenario.scen.characters[i];
 					connected[i].socket.emit('character', connected[i].character);
 				}
 				// Find out who people know is who and tell them about it
@@ -710,6 +727,10 @@ io.sockets.on('connection', function(socket) {
 					}
 					connected[i].socket.emit('knownPeople', knownPeople);
 				}
+				
+				var kingIdx = pickKing();
+				connected[kingIdx].socket.emit('king', { amIKing: true, msg: 'You are king, send ' + currScenario.scen.quests[currScenario.quest].send + ' people' });
+				connected[kingIdx].socket.broadcast.emit('king', { amIKing: false, msg: connected[kingIdx].name + ' is king, they are selecting ' + currScenario.scen.quests[currScenario.quest].send + ' people' });
 			}
 		});
 		socket.on('disconnect', function(content) {
